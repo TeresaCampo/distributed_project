@@ -2,4 +2,4 @@
 Gridworld cooperative game.
 
 First version of "Dstributed AI" exam project.
-![First demo](readme_resources/first_demo.png)
+<img src="readme_resources/first_demo.png" alt="First demo" width="300"/>
