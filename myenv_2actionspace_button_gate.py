@@ -8,17 +8,17 @@ import os
 from collections import defaultdict
 import random
 
-SPRITES_DIR = "./images_nb"
+SPRITES_DIR = "./sprites"
 
 
-# Boilerplate PettingZooimport defaultdict 
+# Boilerplate PettingZoo
 @functools.lru_cache(maxsize=None)
 def observation_space(self, agent): return self.observation_spaces[agent]
 @functools.lru_cache(maxsize=None)
 def action_space(self, agent): return self.action_spaces[agent]
 
 
-class VisualGridWorld(ParallelEnv):
+class MyGridWorld(ParallelEnv):
     metadata = {"render_modes": ["human"], "name": "custom_grid_v0"}
 
     def __init__(self, render_mode=None):
@@ -330,7 +330,7 @@ class VisualGridWorld(ParallelEnv):
 
 # --- Esempio di Esecuzione ---
 if __name__ == '__main__':
-    env = VisualGridWorld(render_mode="human")
+    env = MyGridWorld(render_mode="human")
     observations, infos = env.reset()
     print(observations)
 
