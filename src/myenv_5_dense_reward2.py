@@ -32,6 +32,7 @@ class MyGridWorld(ParallelEnv):
         }
         self.button_pos = self.fixed_components["button"]["pos"]
         self.gate_pos = self.fixed_components["gate_open"]["pos"] 
+        self.target_final_pos = self.gate_pos+[0, -1]
 
         self.x_range = (1, self.grid_size-1-1)
         self.y_range = (1+3+1, self.grid_size-1-1)
@@ -80,7 +81,8 @@ class MyGridWorld(ParallelEnv):
         if not self.agents: return {}, {}, {}, {}, {}
         self.current_cycles += 1
         
-        rewards = {a: -1 for a in self.agents}
+        rewards = {a: 0 for a in self.agents}
+
         terminations = {a: False for a in self.agents}
         truncations = {a: False for a in self.agents}
         infos = {a: {} for a in self.agents}
@@ -156,11 +158,15 @@ class MyGridWorld(ParallelEnv):
         # Negative reward if an agent is on the bottom area and is not pressing the button
         agents_upper_area = 0
         for a, pos in self.agent_positions.items():
-            if pos[1]<4:
-                rewards[a] = +1
+            dist_target = np.linalg.norm(pos - self.target_final_pos)
+            if pos[1]<4:                            # Agent on upper area
+                rewards[a] = +0.5
                 agents_upper_area+=1
-            if (pos[0]==self.button_pos[0] and pos[1]==self.button_pos[1]):
-                rewards[a] = +1
+            elif (pos == self.button_pos).all():    # Agent on button
+                rewards[a] += 0.3     
+                rewards[a] -= (dist_target * 0.05)
+            else:                                   # Agent somewhere else on the grid
+                rewards[a] -= (dist_target * 0.05)
 
        
         if agents_upper_area == len(self.agents)-1:
@@ -168,8 +174,7 @@ class MyGridWorld(ParallelEnv):
             terminations = {a: True for a in self.agents}
         if self.current_cycles >= self.max_cycles:
             truncations= {a: True for a in self.agents}
-            rewards = {a: -100 for a in self.agents}
-
+            
         self.agents = [a for a in self.agents if not terminations[a]]
 
         if self.render_mode == "human":
@@ -180,6 +185,7 @@ class MyGridWorld(ParallelEnv):
     '''
     Determines initial condition of the simulation
     '''
+
     def generate_valid_position(self):
         while True:
             x = np.random.randint(self.x_range[0], self.x_range[1])

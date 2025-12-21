@@ -1,4 +1,3 @@
-from myenv_5_sparse_reward import MyGridWorld
 import random
 from collections import defaultdict
 import numpy as np
@@ -76,9 +75,18 @@ class DQNAgent:
     
     
     def save(self, filename):
-        filename+=".pt"
-        torch.save(self.model.state_dict(), filename)
-        print(f"Model saved in {filename}")
+        base_name = filename
+        extension = ".pt"
+        
+        final_path = f"{base_name}{extension}"
+        counter = 1
+        while os.path.exists(final_path):
+            final_path = f"{base_name}_{counter}{extension}"
+            counter += 1
+
+        torch.save(self.model.state_dict(), final_path)
+        print(f"Model saved in {final_path}")
+
 
     def load(self, filename):
         filename+=".pt"

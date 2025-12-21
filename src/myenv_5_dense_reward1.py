@@ -80,7 +80,9 @@ class MyGridWorld(ParallelEnv):
         if not self.agents: return {}, {}, {}, {}, {}
         self.current_cycles += 1
         
-        rewards = {a: -1 for a in self.agents}
+        rewards = {a: 0 for a in self.agents}
+        target_final_pos = self.gate_pos+1  # My euristic
+
         terminations = {a: False for a in self.agents}
         truncations = {a: False for a in self.agents}
         infos = {a: {} for a in self.agents}
@@ -161,15 +163,25 @@ class MyGridWorld(ParallelEnv):
                 agents_upper_area+=1
             if (pos[0]==self.button_pos[0] and pos[1]==self.button_pos[1]):
                 rewards[a] = +1
-
+            else:
+                distance = max(1, int(np.sqrt(np.sum((pos - target_final_pos)**2))))
+                rewards[a] = -distance
        
         if agents_upper_area == len(self.agents)-1:
             rewards = {a: +100 for a in self.agents}
             terminations = {a: True for a in self.agents}
         if self.current_cycles >= self.max_cycles:
+            '''for a, pos in self.agent_positions.items():
+                if (pos[0]==self.button_pos[0] and pos[1]==self.button_pos[1]):
+                    rewards[a] = 0
+                else:
+                    rewards[a] = -100
+                    '''
             truncations= {a: True for a in self.agents}
             rewards = {a: -100 for a in self.agents}
 
+
+            
         self.agents = [a for a in self.agents if not terminations[a]]
 
         if self.render_mode == "human":
@@ -180,6 +192,7 @@ class MyGridWorld(ParallelEnv):
     '''
     Determines initial condition of the simulation
     '''
+
     def generate_valid_position(self):
         while True:
             x = np.random.randint(self.x_range[0], self.x_range[1])
