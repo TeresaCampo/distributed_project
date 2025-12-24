@@ -62,15 +62,13 @@ class MyGridWorld(ParallelEnv):
         self.action_spaces = {a: spaces.Discrete(5) for a in self.possible_agents}
         OBSERVATION_DIM = 2*(len(self.agents)-1)+2*2+1
         self.observation_spaces = {
-            a: spaces.Box(low=0, high=self.grid_size-1, shape=(OBSERVATION_DIM,), dtype=np.int32) 
+            a: spaces.Box(low=-(self.grid_size-1), high=self.grid_size-1, shape=(OBSERVATION_DIM,), dtype=np.float32) 
             for a in self.possible_agents
         }
 
 
     # Boilerplate PettingZoo
-    @functools.lru_cache(maxsize=None)
     def observation_space(self, agent): return self.observation_spaces[agent]
-    @functools.lru_cache(maxsize=None)
     def action_space(self, agent): return self.action_spaces[agent]
 
     '''
@@ -221,7 +219,7 @@ class MyGridWorld(ParallelEnv):
     '''
     Observation: [my_cur_pos, (other_cur) x number of other agents, button_pos, gate_pos, gate_open (1|0)]    '''
     def gather_observations(self):
-        gate_status_info = np.array([int(self.gate_open)], dtype=np.int32)
+        gate_status_info = np.array([int(self.gate_open)], dtype=np.float32)
         observations = {}
         for observing_agent in self.agents:
             obs_segments = []
@@ -233,7 +231,7 @@ class MyGridWorld(ParallelEnv):
             obs_segments.append(self.button_pos- observing_agent_pos)
             obs_segments.append(self.gate_pos -observing_agent_pos)
             obs_segments.append(gate_status_info)
-            observations[observing_agent] = np.concatenate(obs_segments, dtype=np.int32)
+            observations[observing_agent] = np.concatenate(obs_segments, dtype=np.float32)
         return observations
 
     '''
@@ -350,7 +348,12 @@ class MyGridWorld(ParallelEnv):
         if self.window is not None:
             pygame.display.quit()
             pygame.quit()
+from ray.tune.registry import register_env
 
+def env_creator(env_config):
+    return MyGridWorld(env_config)
+
+register_env("my_gridworld_sparse", env_creator)
 
 # My test execution
 if __name__ == '__main__':
@@ -378,3 +381,5 @@ if __name__ == '__main__':
         print("\nSimulazione interrotta dall'utente.")
     finally:
         env.close()
+
+    
