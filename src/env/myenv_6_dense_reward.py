@@ -101,7 +101,7 @@ class MyGridWorld(ParallelEnv):
 
         terminations = {a: False for a in self.agents}
         truncations = {a: False for a in self.agents}
-        infos = {a: {} for a in self.agents}
+        infos = {a: {"is_success":False} for a in self.agents}
         
         desired_positions = {}      
         button_pressed = False
@@ -190,15 +190,17 @@ class MyGridWorld(ParallelEnv):
         if agents_upper_area == len(self.agents):
             rewards = {a: +100 for a in self.agents}
             terminations = {a: True for a in self.agents}
+            infos = {a: {"is_success":True} for a in self.agents}
+
         if self.current_cycles >= self.max_cycles:
             truncations= {a: True for a in self.agents}
             
+        
         if self.render_mode == "human":
             self.render()
             
         final_obs = self.gather_observations()
         self.agents = [a for a in self.agents if not terminations[a]]
-
         return final_obs, rewards, terminations, truncations, infos
    
     '''
@@ -313,6 +315,7 @@ class MyGridWorld(ParallelEnv):
             self.window = pygame.display.set_mode((self.window_size, self.window_size))
             
             for agent_name in self.agents:
+               # self.agent_sprites[agent_name] = self._load_and_scale_sprite(f"{agent_name}.png", agent_name)
                self.agent_sprites[agent_name] = self._load_and_scale_sprite(".png", agent_name)
 
             for name, data in self.fixed_components.items():
